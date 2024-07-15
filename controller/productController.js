@@ -21,7 +21,7 @@ var gateway = new braintree.BraintreeGateway({
 export const createProductController = async (req, res) => {
     try {
         const { name, description, price, category, quantity, shipping } = req.fields
-        const { photo } = req.files
+        const { photo } = req.file;
         //validation
         switch (true) {
             case !name:
@@ -330,24 +330,24 @@ export const productCategoryController = async (req, res) => {
 
 //payment gateway api
 //token
-export const braintreeTokenController = async(req,res) =>{
-      try{
-        gateway.clientToken.generate({}, function (err, response){
+export const braintreeTokenController = async (req, res) => {
+    try {
+        gateway.clientToken.generate({}, function (err, response) {
             if (err) {
                 res.status(500).send(err);
             } else {
                 res.send(response);
             }
         });
-      } catch (error){
+    } catch (error) {
         console.log(error);
-      }
+    }
 };
 
 
 //payment
-export const braintreePaymentController = async(req,res) => {
-    try{
+export const braintreePaymentController = async (req, res) => {
+    try {
         const { cart, nonce } = req.body;
         let total = 0;
         cart.map((i) => {
@@ -360,18 +360,18 @@ export const braintreePaymentController = async(req,res) => {
                 submitForSettlement: true,
             },
         },
-        function (error, result) {
-            if(result) {
-                const order = new orderModel({
-                    products: cart,
-                    payment: result,
-                    buyer: req.user._id,
-                }).save();
-                res.json({ ok: true });
-            } else {
-                res.status(500).send(error)
-            }
-        })
+            function (error, result) {
+                if (result) {
+                    const order = new orderModel({
+                        products: cart,
+                        payment: result,
+                        buyer: req.user._id,
+                    }).save();
+                    res.json({ ok: true });
+                } else {
+                    res.status(500).send(error)
+                }
+            })
     } catch (error) {
         console.log(error)
     }

@@ -22,6 +22,9 @@ app.use(cors())
 app.use(express.json());
 app.use(morgan('dev'));
 
+//this middle wate use to read file from uploads folder
+app.use("/uploads", express.static("uploads"));
+
 
 // port
 const PORT = process.env.PORT || 8080;
