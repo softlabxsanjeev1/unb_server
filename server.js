@@ -29,10 +29,10 @@ app.use("/uploads", express.static("uploads"));
 // port
 const PORT = process.env.PORT || 8080;
 
-//rest get api
-app.use("/", (req, res) => {
-    res.send("Welcome to ecom site");
-})
+// //rest get api
+// app.use("/", (req, res) => {
+//     res.send("Welcome to ecom site");
+// })
 
 //Routes
 app.use('/api/v1/auth', authRoute);
