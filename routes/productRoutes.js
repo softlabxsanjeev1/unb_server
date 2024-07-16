@@ -11,19 +11,18 @@ import {
     productCountController,
     productFiltersController,
     productListController,
-    productPhotoController,
     relatedProductController,
     searchProductController,
     updateProductController
 } from '../controller/productController.js';
-import formidable from 'express-formidable'
+import { uploadFiles } from '../helpers/multer.js';
 
 const router = express.Router()
 
 //routes
 
 //create products
-router.post('/create-product', requireSignIn, isAdmin, formidable(), createProductController);
+router.post('/create-product', requireSignIn, isAdmin, uploadFiles, createProductController);
 
 // get products
 router.get('/get-product', getProductController);
@@ -32,10 +31,10 @@ router.get('/get-product', getProductController);
 router.get('/get-product/:slug', getSingleProductController);
 
 //get photo
-router.get('/product-photo/:pid', productPhotoController)
+// router.get('/product-photo/:pid', productPhotoController)
 
 //update products
-router.put('/update-product/:pid', requireSignIn, isAdmin, formidable(), updateProductController);
+router.put('/update-product/:pid', requireSignIn, isAdmin, uploadFiles, updateProductController);
 
 //delete product
 router.delete('/delete-product/:pid', deleteProductController)

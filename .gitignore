@@ -138,3 +138,5 @@ debug.log
 # Ignore environment-specific files
 .env
 
+/uploads/
+

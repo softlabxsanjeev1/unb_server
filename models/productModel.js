@@ -17,21 +17,31 @@ const productSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    discount: {
+        type: Number,
+        require: false
+    },
     category: {
         type: mongoose.ObjectId,
         ref: 'Category',
         required: true,
+    },
+    productId: {
+        type: String,
+        require: true,
+        unique: true,
     },
     quantity: {
         type: Number,
         required: true,
     },
     photo: {
-        data: Buffer,
-        contentType: String,
+        type: String,
+        require: true,
     },
     shipping: {
-        type: Boolean,
+        type: String,
+        require: true,
     },
 },
     { timestamps: true }
