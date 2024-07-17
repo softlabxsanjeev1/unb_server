@@ -22,7 +22,7 @@ const router = express.Router()
 //routes
 
 //create products
-router.post('/create-product', requireSignIn, isAdmin, uploadFiles, createProductController);
+router.post('/create-product', requireSignIn, isAdmin, uploadFiles, createProductController,);
 
 // get products
 router.get('/get-product', getProductController);
@@ -56,6 +56,7 @@ router.get('/related-product/:pid/:cid', relatedProductController)
 
 //category wise product
 router.get('/product-category/:slug', productCategoryController)
+
 
 
 //payments routes

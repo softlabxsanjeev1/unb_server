@@ -3,6 +3,7 @@ import productModel from '../models/productModel.js'
 import categoryModel from '../models/categoryModel.js'
 import orderModel from '../models/orderModel.js'
 import fs from 'fs'
+import { rm } from 'fs'
 import { count } from 'console';
 import braintree from 'braintree'
 
@@ -110,13 +111,13 @@ export const getProductController = async (req, res) => {
 // get single product
 export const getSingleProductController = async (req, res) => {
     try {
-        const product = await productModel
+        const products = await productModel
             .findOne({ slug: req.params.slug })
             .populate("category");
         res.status(200).send({
             success: true,
             message: "Single Product Fetched",
-            product,
+            products
         });
     } catch (error) {
         // console.log(error)
@@ -152,7 +153,10 @@ export const getSingleProductController = async (req, res) => {
 // delete product
 export const deleteProductController = async (req, res) => {
     try {
-        await productModel.findByIdAndDelete(req.params.pid)
+        const product = await productModel.findByIdAndDelete(req.params.pid)
+        rm(product.photo, () => {
+            console.log("image deleted");
+        });
         res.status(200).send({
             success: true,
             message: "Product Deleted successfully"
