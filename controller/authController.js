@@ -2,6 +2,8 @@ import userModel from '../models/userModel.js'
 import orderModel from '../models/orderModel.js'
 import { comparePassword, hashPassword } from '../helpers/authHelper.js'
 import JWT from 'jsonwebtoken'
+import productModel from '../models/productModel.js';
+import categoryModel from '../models/categoryModel.js';
 
 
 export const registerController = async (req, res) => {
@@ -259,3 +261,32 @@ export const orderStatusController = async (req, res) => {
     }
 
 }
+
+
+// Stats
+export const statsController = async (req, res) => {
+    try {
+        const totalUsers = (await userModel.find()).length;
+        const totalProducts = (await productModel.find()).length;
+        const totalOrders = (await orderModel.find()).length;
+        const totalCategoris = (await categoryModel.find()).length;
+        const stats = {
+            totalUsers,
+            totalProducts,
+            totalOrders,
+            totalCategoris
+        };
+        res.json(stats);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Error While fetching stats",
+            error,
+        });
+    }
+
+}
+
+
+
