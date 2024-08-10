@@ -40,7 +40,7 @@ export const updateCategory = TryCatch(async (req, res) => {
 
 // get all category controller
 export const getAllcategory = TryCatch(async (req, res) => {
-    const category = await Category.findOne({ slug: req.params.slug })
+    const category = await Category.find({})
     res.status(200).json({
         message: "All Categories List",
         category,
@@ -50,7 +50,8 @@ export const getAllcategory = TryCatch(async (req, res) => {
 
 // get single category
 export const singleCategory = TryCatch(async (req, res) => {
-    const category = await Category.find({})
+    const { slug } = req.params.slug
+    const category = await Category.findOne({ slug: slug })
     res.status(200).json({
         message: "Get Single Category Successfully",
         category

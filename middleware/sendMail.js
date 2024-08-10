@@ -1,16 +1,16 @@
 import { createTransport } from 'nodemailer';
 
 const sendMail = async (email, subject, data) => {
-    const transport = createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        auth: {
-            user: process.env.GMAIL,
-            pass: process.env.PASSWORD,
-        },
-    });
+  const transport = createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    auth: {
+      user: process.env.GMAIL,
+      pass: process.env.PASSWORD,
+    },
+  });
 
-    const html = `< !DOCTYPE html>
+  const html = `< !DOCTYPE html>
         < html lang = "en" >
             <head>
                 <meta charset="UTF-8">
@@ -57,29 +57,29 @@ const sendMail = async (email, subject, data) => {
                 </html>
             `;
 
-    await transport.sendMail({
-        from: process.env.GMAIL,
-        to: email,
-        subject,
-        html,
-    });
+  await transport.sendMail({
+    from: process.env.GMAIL,
+    to: email,
+    subject,
+    html,
+  });
 };
 
 export default sendMail;
 
 
 export const sendForgotMail = async (subject, data) => {
-    const transport = createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        auth: {
-            user: process.env.GMAIL,
-            pass: process.env.PASSWORD,
-        },
-    });
+  const transport = createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    auth: {
+      user: process.env.GMAIL,
+      pass: process.env.PASSWORD,
+    },
+  });
 
 
-    const html = `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -143,12 +143,12 @@ export const sendForgotMail = async (subject, data) => {
 </html>
 `;
 
-    await transport.sendMail({
-        from: process.env.GMAIL,
-        to: data.email,
-        subject,
-        html,
-    });
+  await transport.sendMail({
+    from: process.env.GMAIL,
+    to: data.email,
+    subject,
+    html,
+  });
 
 }
 

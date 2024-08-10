@@ -8,6 +8,7 @@ import userRoutes from './routes/userRoutes.js'
 import categoryRoutes from "./routes/category.js"
 import adminRoutes from './routes/admin.js'
 import Razorpay from "razorpay"
+import bodyParser from 'body-parser';
 
 
 const app = express();
@@ -34,6 +35,7 @@ const port = process.env.PORT || 5000
 // );
 app.use(cors())
 app.use(cookieParser());
+app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));

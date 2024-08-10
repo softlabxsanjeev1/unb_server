@@ -36,7 +36,6 @@ export const getAllProducts = TryCatch(async (req, res) => {
     const products = await Products
         .find({})
         .populate('category')
-        .limit(10)
         .sort({ createdAt: -1 });
 
     res.json({
@@ -46,7 +45,7 @@ export const getAllProducts = TryCatch(async (req, res) => {
 
 
 // get Single Products
-export const getSingleProducts = TryCatch(async (req, res) => {
+export const getSingleProduct = TryCatch(async (req, res) => {
     const product = await Products.findById(req.params.id)
     res.json({
         message: "Single Product Fetched",
@@ -57,7 +56,7 @@ export const getSingleProducts = TryCatch(async (req, res) => {
 
 export const deleteProduct = TryCatch(async (req, res) => {
     const product = await Products.findById(req.params.id);
-    rm(course.image, () => {
+    rm(product.image, () => {
         // console.log("image deleted");
     });
     await product.deleteOne();

@@ -23,11 +23,42 @@ const schema = new mongoose.Schema({
         type: String,
         default: "user",
     },
-    resetPasswordExpire: Date,
+    gender: {
+        type: String
+    },
+    age: {
+        type: Number
+    },
+    verified: {
+        type: Boolean,
+        default: true
+    },
+    verificationToken: String,
+    addresses: [
+        {
+            name: String,
+            phone: String,
+            houseno: String,
+            street: String,
+            landmark: String,
+            city: String,
+            country: String,
+            postalCode: String
+        }
+    ],
+    orders: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Order"
+        }
+    ],
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
 },
-    {
-        timestamps: true,
-    });
+    { timestamps: true }
+);
 
 
 export const User = mongoose.model("User", schema);

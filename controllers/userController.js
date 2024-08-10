@@ -14,6 +14,7 @@ export const register = TryCatch(async (req, res) => {
             message: "User Already exists",
         });
     const hashPassword = await bcrypt.hash(password, 10);
+    // const category = await new Category({ name, slug: slugify(name) }).save()
     user = {
         name,
         email,
@@ -45,6 +46,7 @@ export const register = TryCatch(async (req, res) => {
 // Save user in Database after varification
 export const verifyUser = TryCatch(async (req, res) => {
     const { otp, activationToken } = req.body;
+    console.log(otp, activationToken)
     const verify = jwt.verify(activationToken, process.env.ACTIVATION_SECRET);
     if (!verify)
         return res.status(400).json({
@@ -57,14 +59,13 @@ export const verifyUser = TryCatch(async (req, res) => {
     await User.create({
         name: verify.user.name,
         email: verify.user.email,
+        phone: verify.user.phone,
         password: verify.user.password,
     })
     res.json({
         message: "User Register"
     })
 });
-
-
 
 // login user 
 export const loginUser = TryCatch(async (req, res) => {
@@ -90,23 +91,70 @@ export const loginUser = TryCatch(async (req, res) => {
 });
 
 
+// add address  
+export const addAddress = TryCatch(async (req, res) => {
+    const { userId, address } = req.body
+
+    const user = await User.findById(userId);
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+    //add the new address to user's addresses array
+    user.addresses.push(address);
+    //save updated user in dat base
+    await user.save();
+    res.status(200).json({ message: "Address created successfully" })
+
+})
+
+// get all address of particular user 
+export const getAddresses = TryCatch(async (req, res) => {
+    const { userId } = req.body
+    const user = await User.findById(userId);
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+    //get all addresses
+    const addresses = user.addresses;
+    res.status(200).json({ addresses })
+
+})
+
 // update profile
 export const updateProfile = TryCatch(async (req, res) => {
+    const { name, password, phone, gender, age, city, state, locality, landmark, pincode } = req.body;
     const user = await User.findById(req.user._id);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const updatedUser = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            name: name || user.name,
+            password: hashedPassword || user.password,
+            phone: phone || user.phone,
+            gender: gender || user.gender,
+            age: age || user.age,
+            city: city || user.city,
+            state: state || user.state,
+            locality: locality || user.locality,
+            landmark: landmark || user.landmark,
+            pincode: pincode || user.pincode,
+        },
+        { new: true }
+    );
     res.json({
         message: "Profile Updated success fully",
-        user
+        updatedUser
     });
 });
 
 // fetch own profile
-export const myProfile = TryCatch(async (req, res) => {
-    const user = await User.findById(req.user._id);
-    res.json({
-        message: "Your profile",
-        user
-    });
-});
+// export const myProfile = TryCatch(async (req, res) => {
+//     const user = await User.findById(req.user._id);
+//     res.json({
+//         message: "Your profile",
+//         user
+//     });
+// });
 
 
 //forgot password

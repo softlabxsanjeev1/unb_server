@@ -1,40 +1,80 @@
 import mongoose from 'mongoose'
 
 const schema = new mongoose.Schema({
-    orderItems: [
+    buyer: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        require: true
+    },
+    products: [
         {
-            product: {
-                type: mongoose.ObjectId,
-                ref: "Products",
+            name: {
+                type: String,
+                require: true,
             },
-            price: {
-                type: Number,
-                required: true
+            productId: {
+                type: String,
+                require: true,
             },
             quantity: {
                 type: Number,
-                required: true
-            }
+                required: true,
+            },
+            price: {
+                type: Number,
+                required: true,
+            },
+            image: {
+                type: String,
+                required: true,
+            },
         },
     ],
-    shippingAddress: {
+    totalPrice: {
+        type: Number,
+        required: true
+    },
+    ahippingAddress: {
+        name: {
+            type: String,
+            required: true,
+        },
+        mobileNo: {
+            type: String,
+            required: true,
+        },
+        houseNo: {
+            type: String,
+            required: true,
+        },
+        street: {
+            type: String,
+            required: true,
+        },
+        landmark: {
+            type: String,
+            required: true,
+        },
+        postalCode: {
+            type: Number,
+            required: true,
+        }
+    },
+    // cod || online pay 
+    paymentMethod: {
         type: String,
         required: true,
     },
-    buyer: {
-        type: mongoose.ObjectId,
-        ref: "Users",
-    },
-    paymentInfo: {
-        razorpay_order_id: {
-            type: String,
-            required: true,
-        },
-        razorpay_payment_id: {
-            type: String,
-            required: true,
-        },
-    },
+    // paymentInfo: {
+    //     razorpay_order_id: {
+    //         type: String,
+    //         required: true,
+    //     },
+    //     razorpay_payment_id: {
+    //         type: String,
+    //         required: true,
+    //     },
+    // },
     status: {
         type: String,
         default: "Not Process",
@@ -44,10 +84,7 @@ const schema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-    totalPrice: {
-        type: Number,
-        required: true
-    },
+
 },
     { timestamps: true }
 );
