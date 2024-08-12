@@ -37,7 +37,6 @@ export const getAllProducts = TryCatch(async (req, res) => {
         .find({})
         .populate('category')
         .sort({ createdAt: -1 });
-
     res.json({
         products
     });

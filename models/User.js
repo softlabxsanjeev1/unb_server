@@ -42,6 +42,7 @@ const schema = new mongoose.Schema({
             street: String,
             landmark: String,
             city: String,
+            statename: String,
             country: String,
             postalCode: String
         }

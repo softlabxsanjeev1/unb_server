@@ -3,7 +3,6 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import sendMail, { sendForgotMail } from '../middleware/sendMail.js';
 import TryCatch from '../middleware/TryCatch.js';
-import { instance } from "../server.js";
 import { Order } from '../models/Order.js';
 
 export const register = TryCatch(async (req, res) => {
@@ -46,7 +45,7 @@ export const register = TryCatch(async (req, res) => {
 // Save user in Database after varification
 export const verifyUser = TryCatch(async (req, res) => {
     const { otp, activationToken } = req.body;
-    console.log(otp, activationToken)
+    // console.log(otp, activationToken)
     const verify = jwt.verify(activationToken, process.env.ACTIVATION_SECRET);
     if (!verify)
         return res.status(400).json({
@@ -110,6 +109,7 @@ export const addAddress = TryCatch(async (req, res) => {
 // get all address of particular user 
 export const getAddresses = TryCatch(async (req, res) => {
     const { userId } = req.body
+    console.log(userId)
     const user = await User.findById(userId);
     if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -122,22 +122,17 @@ export const getAddresses = TryCatch(async (req, res) => {
 
 // update profile
 export const updateProfile = TryCatch(async (req, res) => {
-    const { name, password, phone, gender, age, city, state, locality, landmark, pincode } = req.body;
-    const user = await User.findById(req.user._id);
+    const { name, password, phone, gender, age } = req.body;
+    const user = await User.findById(req.params.id);
     const hashedPassword = await bcrypt.hash(password, 10);
     const updatedUser = await User.findByIdAndUpdate(
-        req.user._id,
+        req.params.id,
         {
             name: name || user.name,
             password: hashedPassword || user.password,
             phone: phone || user.phone,
             gender: gender || user.gender,
             age: age || user.age,
-            city: city || user.city,
-            state: state || user.state,
-            locality: locality || user.locality,
-            landmark: landmark || user.landmark,
-            pincode: pincode || user.pincode,
         },
         { new: true }
     );
@@ -213,43 +208,52 @@ export const resetPassword = TryCatch(async (req, res) => {
 });
 
 
-// checkout
-export const checkout = TryCatch(async (req, res) => {
-    const { price } = req.body;
-    const options = {
-        amount: Number(price * 100),
-        currency: "INR",
-    };
-    const order = await instance.orders.create(options);
-    res.status(201).json({
-        order,
-    });
-});
-
 
 // order placed 
 export const placeOrder = TryCatch(async (req, res) => {
-    const { shippingAddress, orderItems, paymentInfo, status, totalPrice, createdAt } = req.body;
-    const user = await User.findById(req.user._id)
+    const { userId, cartItems, shippingAddress, totalPrice } = req.body;
+    console.log(userId, cartItems, shippingAddress, totalPrice)
+    const user = await User.findById(userId);
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
 
-    const order = await new Order({
-        shippingAddress, orderItems, paymentInfo, status, totalPrice, createdAt, user: user
-    }).save();;
+    //create any array of product objects from the cart Items
+    const products = await cartItems.map((item) => ({
+        name: item?.name,
+        productId: item?.productId,
+        quantity: item.qty,
+        price: item.price,
+    }));
+
+    //create new order
+    const order = await Order.create({
+        user: userId,
+        products: products,
+        totalPrice: totalPrice,
+        shippingAddress: shippingAddress,
+    })
+    user.orders.push(order._id)
     res.status(200).json({
         message: "Order Created successfully",
-        order
     })
 })
 
 
 // get my order 
 export const myOrder = TryCatch(async (req, res) => {
-    const order = await Order
-        .find({ buyer: req.user._id })
-        .populate("buyer", "name")
-    res.status(200).json({
-        message: "Order Created successfully",
-        order
+    const { userId } = req.body;
+    const orders = await Order
+        .find({ user: userId })
+        .populate("user")
+        .sort({ createdAt: -1 });
+
+    if (!orders || orders.length === 0) {
+        return res.status(404).json({ message: "No orders found for this user" })
+    }
+    res.json({
+        message: "Order fetched successfully",
+        orders
     });
 });
 

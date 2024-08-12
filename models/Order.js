@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 
 const schema = new mongoose.Schema({
-    buyer: {
+    user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         require: true
@@ -24,26 +24,22 @@ const schema = new mongoose.Schema({
                 type: Number,
                 required: true,
             },
-            image: {
-                type: String,
-                required: true,
-            },
         },
     ],
     totalPrice: {
         type: Number,
         required: true
     },
-    ahippingAddress: {
+    shippingAddress: {
         name: {
             type: String,
             required: true,
         },
-        mobileNo: {
+        phone: {
             type: String,
             required: true,
         },
-        houseNo: {
+        houseno: {
             type: String,
             required: true,
         },
@@ -55,25 +51,28 @@ const schema = new mongoose.Schema({
             type: String,
             required: true,
         },
+        city: {
+            type: String,
+            required: true,
+        },
+        statename: {
+            type: String,
+            required: true,
+        },
+        country: {
+            type: String,
+            required: true,
+            default: "India"
+        },
         postalCode: {
             type: Number,
             required: true,
         }
     },
     // cod || online pay 
-    paymentMethod: {
-        type: String,
-        required: true,
-    },
-    // paymentInfo: {
-    //     razorpay_order_id: {
-    //         type: String,
-    //         required: true,
-    //     },
-    //     razorpay_payment_id: {
-    //         type: String,
-    //         required: true,
-    //     },
+    // paymentMethod: {
+    //     type: String,
+    //     required: true,
     // },
     status: {
         type: String,
