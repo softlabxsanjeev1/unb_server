@@ -19,6 +19,10 @@ const schema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    otp: {
+        type: String || Number,
+        required: true
+    },
     role: {
         type: String,
         default: "user",

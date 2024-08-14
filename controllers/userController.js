@@ -13,58 +13,91 @@ export const register = TryCatch(async (req, res) => {
             message: "User Already exists",
         });
     const hashPassword = await bcrypt.hash(password, 10);
-    // const category = await new Category({ name, slug: slugify(name) }).save()
-    user = {
-        name,
-        email,
-        phone,
-        password: hashPassword,
-    };
+    // user = {
+    //     name,
+    //     email,
+    //     phone,
+    //     password: hashPassword,
+    // };
     const otp = Math.floor(Math.random() * 1000000);
-    const activationToken = jwt.sign({
-        user,
-        otp,
-    },
-        process.env.ACTIVATION_SECRET,
-        {
-            expiresIn: "5m",
-        }
-    );
+    // const activationToken = jwt.sign({
+    //     user,
+    //     otp,
+    // },
+    //     process.env.ACTIVATION_SECRET,
+    //     {
+    //         expiresIn: "5m",
+    //     }
+    // );
     const data = {
         name,
         otp,
     };
+    const userdata = await User.create({
+        name,
+        email,
+        phone,
+        otp,
+        password: hashPassword
+    })
     await sendMail(email, "Unique Bazar", data);
     res.status(200).json({
+        // message: "User Register",
         message: "Otp send to your mail",
-        activationToken,
+        userdata
     });
 })
 
 
 // Save user in Database after varification
+// export const verifyUser = TryCatch(async (req, res) => {
+//     const { otp, activationToken } = req.body;
+//     console.log(otp, activationToken)
+//     const verify = jwt.verify(activationToken, process.env.ACTIVATION_SECRET);
+//     if (!verify)
+//         return res.status(400).json({
+//             message: "Otp Expired",
+//         });
+//     if (verify.otp !== otp)
+//         return res.status(400).json({
+//             message: "Wrong OTP",
+//         });
+//     await User.create({
+//         name: verify.user.name,
+//         email: verify.user.email,
+//         phone: verify.user.phone,
+//         password: verify.user.password,
+//     })
+//     res.json({
+//         message: "User Register"
+//     })
+// });
+
+// verify user 
 export const verifyUser = TryCatch(async (req, res) => {
-    const { otp, activationToken } = req.body;
-    // console.log(otp, activationToken)
-    const verify = jwt.verify(activationToken, process.env.ACTIVATION_SECRET);
-    if (!verify)
+    const { otp, email } = req.body;
+    // console.log(email)
+    const user = await User.findOne({ email });
+    if (!user)
         return res.status(400).json({
-            message: "Otp Expired",
+            message: "No User with this email",
         });
-    if (verify.otp !== otp)
+    const matchOtp = await user.otp == otp;
+    if (!matchOtp)
         return res.status(400).json({
-            message: "Wrong OTP",
+            message: "wrong Otp",
         });
-    await User.create({
-        name: verify.user.name,
-        email: verify.user.email,
-        phone: verify.user.phone,
-        password: verify.user.password,
-    })
-    res.json({
-        message: "User Register"
-    })
+    user.otp = "verified"
+    await user.save()
+
+    res.status(200).json({
+        message: `Welcome back ${user.name}`,
+    });
 });
+
+
+
+
 
 // login user 
 export const loginUser = TryCatch(async (req, res) => {
@@ -108,8 +141,8 @@ export const addAddress = TryCatch(async (req, res) => {
 
 // get all address of particular user 
 export const getAddresses = TryCatch(async (req, res) => {
-    const { userId } = req.body
-    console.log(userId)
+    const userId = req.params.id
+    // console.log(userId)
     const user = await User.findById(userId);
     if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -123,7 +156,10 @@ export const getAddresses = TryCatch(async (req, res) => {
 // update profile
 export const updateProfile = TryCatch(async (req, res) => {
     const { name, password, phone, gender, age } = req.body;
-    const user = await User.findById(req.params.id);
+    const userId = req.params.id
+    // console.log(name, age)
+    // console.log(userId)
+    const user = await User.findById(userId);
     const hashedPassword = await bcrypt.hash(password, 10);
     const updatedUser = await User.findByIdAndUpdate(
         req.params.id,
@@ -153,59 +189,59 @@ export const updateProfile = TryCatch(async (req, res) => {
 
 
 //forgot password
-export const forgotPassword = TryCatch(async (req, res) => {
-    const { email } = req.body;
-    const user = await User.findOne({ email });
-    if (!user)
-        return res.status(400).json({
-            message: "No User with this email",
-        });
+// export const forgotPassword = TryCatch(async (req, res) => {
+//     const { email } = req.body;
+//     const user = await User.findOne({ email });
+//     if (!user)
+//         return res.status(400).json({
+//             message: "No User with this email",
+//         });
 
-    const token = jwt.sign({ email }, process.env.Forgot_Secret)
+//     const token = jwt.sign({ email }, process.env.Forgot_Secret)
 
-    const data = { email, token };
+//     const data = { email, token };
 
-    await sendForgotMail("Unique Bazar", data);
+//     await sendForgotMail("Unique Bazar", data);
 
-    user.resetPasswordExpire = Date.now() + 5 * 60 * 1000;
+//     user.resetPasswordExpire = Date.now() + 5 * 60 * 1000;
 
-    await user.save();
+//     await user.save();
 
-    res.json({
-        message: "Reset Password Link is send to your mail"
-    })
-})
+//     res.json({
+//         message: "Reset Password Link is send to your mail"
+//     })
+// })
 
 
-export const resetPassword = TryCatch(async (req, res) => {
-    const decodedData = jwt.verify(req.query.token, process.env.Forgot_Secret);
-    const user = await User.findOne({ email: decodedData.email });
+// export const resetPassword = TryCatch(async (req, res) => {
+//     const decodedData = jwt.verify(req.query.token, process.env.Forgot_Secret);
+//     const user = await User.findOne({ email: decodedData.email });
 
-    if (!user)
-        return res.status(404).json({
-            message: "No user with this email"
-        });
+//     if (!user)
+//         return res.status(404).json({
+//             message: "No user with this email"
+//         });
 
-    if (user.resetPasswordExpire === null)
-        return res.status(404).json({
-            message: "Token Expired",
-        });
+//     if (user.resetPasswordExpire === null)
+//         return res.status(404).json({
+//             message: "Token Expired",
+//         });
 
-    if (user.resetPasswordExpire < Date.now()) {
-        return res.status(400).json({
-            message: "Token Expired",
-        });
-    }
+//     if (user.resetPasswordExpire < Date.now()) {
+//         return res.status(400).json({
+//             message: "Token Expired",
+//         });
+//     }
 
-    const password = await bcrypt.hash(req.body.password, 10);
-    user.password = password;
+//     const password = await bcrypt.hash(req.body.password, 10);
+//     user.password = password;
 
-    user.resetPasswordExpire = null;
+//     user.resetPasswordExpire = null;
 
-    await user.save();
+//     await user.save();
 
-    res.json({ message: "Password Reset" });
-});
+//     res.json({ message: "Password Reset" });
+// });
 
 
 
@@ -242,7 +278,8 @@ export const placeOrder = TryCatch(async (req, res) => {
 
 // get my order 
 export const myOrder = TryCatch(async (req, res) => {
-    const { userId } = req.body;
+    const userId = req.params.id;
+    // console.log(userId)
     const orders = await Order
         .find({ user: userId })
         .populate("user")
