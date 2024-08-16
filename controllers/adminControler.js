@@ -6,24 +6,19 @@ import { User } from "../models/User.js";
 import { Order } from '../models/Order.js'
 
 
-
 // create product 
 export const createProduct = TryCatch(async (req, res) => {
     const { name, slug, createdBy, description, price, category, quantity, shipping, productId, discount, review } = req.body;
     const image = req.file;
-
     //find existing product on the bases of id
     const existingproductId = await Products.findOne({ productId });
-
     if (existingproductId) {
         return res.status(200).send({
             success: false,
             message: "Product already exist",
         })
     }
-
     const product = await new Products({ name, slug, createdBy, description, price, category, quantity, shipping, productId, discount, review, image: image?.path, }).save();
-
     res.status(201).json({
         message: "Product Created Successfully",
         product,
@@ -109,17 +104,6 @@ export const getAllUser = TryCatch(async (req, res) => {
     );
 
     res.json({ users });
-});
-
-
-// show product according to category
-export const productFilter = TryCatch(async (req, res) => {
-    const category = await Category.findOne({ slug: req.params.slug });
-    const products = await Products.find({ category }).populate("category");
-
-    res.json({
-        products
-    });
 });
 
 

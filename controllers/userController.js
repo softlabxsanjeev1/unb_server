@@ -1,9 +1,11 @@
 import { User } from '../models/User.js';
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import sendMail, { sendForgotMail } from '../middleware/sendMail.js';
+import sendMail from '../middleware/sendMail.js';
 import TryCatch from '../middleware/TryCatch.js';
 import { Order } from '../models/Order.js';
+import { Category } from '../models/Category.js';
+import { Products } from '../models/Products.js';
 
 export const register = TryCatch(async (req, res) => {
     const { email, name, phone, password } = req.body;
@@ -13,26 +15,8 @@ export const register = TryCatch(async (req, res) => {
             message: "User Already exists",
         });
     const hashPassword = await bcrypt.hash(password, 10);
-    // user = {
-    //     name,
-    //     email,
-    //     phone,
-    //     password: hashPassword,
-    // };
     const otp = Math.floor(Math.random() * 1000000);
-    // const activationToken = jwt.sign({
-    //     user,
-    //     otp,
-    // },
-    //     process.env.ACTIVATION_SECRET,
-    //     {
-    //         expiresIn: "5m",
-    //     }
-    // );
-    const data = {
-        name,
-        otp,
-    };
+    const data = { name, otp };
     const userdata = await User.create({
         name,
         email,
@@ -42,36 +26,11 @@ export const register = TryCatch(async (req, res) => {
     })
     await sendMail(email, "Unique Bazar", data);
     res.status(200).json({
-        // message: "User Register",
         message: "Otp send to your mail",
         userdata
     });
 })
 
-
-// Save user in Database after varification
-// export const verifyUser = TryCatch(async (req, res) => {
-//     const { otp, activationToken } = req.body;
-//     console.log(otp, activationToken)
-//     const verify = jwt.verify(activationToken, process.env.ACTIVATION_SECRET);
-//     if (!verify)
-//         return res.status(400).json({
-//             message: "Otp Expired",
-//         });
-//     if (verify.otp !== otp)
-//         return res.status(400).json({
-//             message: "Wrong OTP",
-//         });
-//     await User.create({
-//         name: verify.user.name,
-//         email: verify.user.email,
-//         phone: verify.user.phone,
-//         password: verify.user.password,
-//     })
-//     res.json({
-//         message: "User Register"
-//     })
-// });
 
 // verify user 
 export const verifyUser = TryCatch(async (req, res) => {
@@ -89,14 +48,10 @@ export const verifyUser = TryCatch(async (req, res) => {
         });
     user.otp = "verified"
     await user.save()
-
     res.status(200).json({
         message: `Welcome back ${user.name}`,
     });
 });
-
-
-
 
 
 // login user 
@@ -123,10 +78,47 @@ export const loginUser = TryCatch(async (req, res) => {
 });
 
 
+
+//forgot password  get mail send otp and set otp = new otp ress=> otp and email
+export const forgotPassword = TryCatch(async (req, res) => {
+    let { email } = req.body;
+    console.log(email)
+    email = JSON.parse(email)
+    const user = await User.findOne({ email });
+    if (!user)
+        return res.status(400).json({
+            message: "No User with this email",
+        });
+    const otp = Math.floor(Math.random() * 1000000);
+    const data = { email, otp };
+    await sendMail(email, "Unique Bazar", data);
+    user.otp = otp,
+        await user.save();
+    res.json({
+        message: "Otp send to your mail",
+        email
+    })
+})
+
+
+// reset password get mail and new password
+export const resetPassword = TryCatch(async (req, res) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user)
+        return res.status(404).json({
+            message: "No user with this email"
+        });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    await user.save();
+    res.json({ message: "Password Reset" });
+});
+
+
 // add address  
 export const addAddress = TryCatch(async (req, res) => {
     const { userId, address } = req.body
-
     const user = await User.findById(userId);
     if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -150,7 +142,6 @@ export const getAddresses = TryCatch(async (req, res) => {
     //get all addresses
     const addresses = user.addresses;
     res.status(200).json({ addresses })
-
 })
 
 // update profile
@@ -188,63 +179,6 @@ export const updateProfile = TryCatch(async (req, res) => {
 // });
 
 
-//forgot password
-// export const forgotPassword = TryCatch(async (req, res) => {
-//     const { email } = req.body;
-//     const user = await User.findOne({ email });
-//     if (!user)
-//         return res.status(400).json({
-//             message: "No User with this email",
-//         });
-
-//     const token = jwt.sign({ email }, process.env.Forgot_Secret)
-
-//     const data = { email, token };
-
-//     await sendForgotMail("Unique Bazar", data);
-
-//     user.resetPasswordExpire = Date.now() + 5 * 60 * 1000;
-
-//     await user.save();
-
-//     res.json({
-//         message: "Reset Password Link is send to your mail"
-//     })
-// })
-
-
-// export const resetPassword = TryCatch(async (req, res) => {
-//     const decodedData = jwt.verify(req.query.token, process.env.Forgot_Secret);
-//     const user = await User.findOne({ email: decodedData.email });
-
-//     if (!user)
-//         return res.status(404).json({
-//             message: "No user with this email"
-//         });
-
-//     if (user.resetPasswordExpire === null)
-//         return res.status(404).json({
-//             message: "Token Expired",
-//         });
-
-//     if (user.resetPasswordExpire < Date.now()) {
-//         return res.status(400).json({
-//             message: "Token Expired",
-//         });
-//     }
-
-//     const password = await bcrypt.hash(req.body.password, 10);
-//     user.password = password;
-
-//     user.resetPasswordExpire = null;
-
-//     await user.save();
-
-//     res.json({ message: "Password Reset" });
-// });
-
-
-
 // order placed 
 export const placeOrder = TryCatch(async (req, res) => {
     const { userId, cartItems, shippingAddress, totalPrice } = req.body;
@@ -253,7 +187,6 @@ export const placeOrder = TryCatch(async (req, res) => {
     if (!user) {
         return res.status(404).json({ message: "User not found" });
     }
-
     //create any array of product objects from the cart Items
     const products = await cartItems.map((item) => ({
         name: item?.name,
@@ -261,7 +194,6 @@ export const placeOrder = TryCatch(async (req, res) => {
         quantity: item.qty,
         price: item.price,
     }));
-
     //create new order
     const order = await Order.create({
         user: userId,
@@ -293,5 +225,34 @@ export const myOrder = TryCatch(async (req, res) => {
         orders
     });
 });
+
+
+// get all products according to category
+export const getProducts = TryCatch(async (req, res) => {
+    const slug = req.params.slug;
+    // console.log(slug)
+    const products = await Products.find({ slug: { $regex: slug, } });
+    // console.log(products)
+    res.status(200).json({
+        // category,
+        products,
+    })
+})
+
+
+// Search product according to keyword
+export const searchProducts = TryCatch(async (req, res) => {
+    const keyword = req.params.search;
+    // console.log(keyword)
+    const products = await Products.find({
+        $or: [
+            { name: { $regex: keyword, $options: 'i' } },
+            { description: { $regex: keyword, $options: 'i' } },
+        ],
+    })
+    res.status(200).json({
+        products,
+    })
+})
 
 

@@ -4,6 +4,7 @@ import slugify from 'slugify';
 
 export const createCategory = TryCatch(async (req, res) => {
     const { name } = req.body;
+    const image = req.file;
     if (!name) {
         return res.status(401).send({ message: "Name is required" })
     }
@@ -14,29 +15,13 @@ export const createCategory = TryCatch(async (req, res) => {
             message: 'Category Already Exists'
         })
     }
-    const category = await new Category({ name, slug: slugify(name) }).save()
-
+    const category = await new Category({ name, slug: slugify(name), image: image?.path }).save()
     res.status(201).json({
         message: "Category Created Successfully",
         category
     });
 });
 
-
-//update category
-export const updateCategory = TryCatch(async (req, res) => {
-    const { name } = req.body
-    const { id } = req.params
-    const category = await Category.findByIdAndUpdate(id,
-        { name, slug: slugify(name) },
-        { new: true }
-    );
-
-    res.status(200).json({
-        message: "Category Updated Successfully",
-        category,
-    });
-});
 
 // get all category controller
 export const getAllcategory = TryCatch(async (req, res) => {
@@ -48,20 +33,24 @@ export const getAllcategory = TryCatch(async (req, res) => {
 });
 
 
-// get single category
-export const singleCategory = TryCatch(async (req, res) => {
-    const { slug } = req.params.slug
-    const category = await Category.findOne({ slug: slug })
-    res.status(200).json({
-        message: "Get Single Category Successfully",
-        category
-    });
-});
+// // get single category
+// export const singleCategory = TryCatch(async (req, res) => {
+//     const { slug } = req.params.slug
+//     const category = await Category.findOne({ slug: slug })
+//     res.status(200).json({
+//         message: "Get Single Category Successfully",
+//         category
+//     });
+// });
 
 
 export const deleteCategory = TryCatch(async (req, res) => {
     const { id } = req.params;
-    await Category.findByIdAndDelete(id)
+    const category = await Category.findById(id)
+    rm(category.image, () => {
+        // console.log("image deleted");
+    });
+    await category.deleteOne();
     res.status(200).json({
         message: "Category deleted Successfully",
     });

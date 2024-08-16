@@ -9,6 +9,10 @@ const schema = new mongoose.Schema({
         type: String,
         lowercase: true,
     },
+    image: {
+        type: String,
+        require: true,
+    },
 });
 
 export const Category = mongoose.model("Category", schema);
