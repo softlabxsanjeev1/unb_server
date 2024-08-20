@@ -5,7 +5,7 @@ export const dbConnection = () => {
     mongoose.connect(process.env.Mongo_URI, {
         dbName: "Unique_Bazar",
     }).then(() => {
-        console.log("Successfully Connected to database!..........");
+        console.log("Successfully Connected to Booking database!..........");
     }).catch(err => {
         console.log(`Error occur while connecting to database ${err}`);
     })

@@ -4,7 +4,6 @@ import jwt from 'jsonwebtoken'
 import sendMail from '../middleware/sendMail.js';
 import TryCatch from '../middleware/TryCatch.js';
 import { Order } from '../models/Order.js';
-import { Category } from '../models/Category.js';
 import { Products } from '../models/Products.js';
 
 export const register = TryCatch(async (req, res) => {
